@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <title>Daymark | Todo list</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#" aria-label="Daymark home">
+          <span class="brand-mark">D</span>
+          <span>daymark</span>
+        </a>
+
+        <div class="sidebar-intro">
+          <p class="eyebrow">Your personal space</p>
+          <h1>Make room<br />for what matters.</h1>
+        </div>
+
+        <nav class="side-nav" aria-label="Todo views">
+          <button class="nav-item is-active" type="button" data-filter="all">
+            <span class="nav-icon">◌</span> All tasks
+            <span class="nav-count" id="all-count">0</span>
+          </button>
+          <button class="nav-item" type="button" data-filter="today">
+            <span class="nav-icon">◷</span> Today
+          </button>
+          <button class="nav-item" type="button" data-filter="completed">
+            <span class="nav-icon">✓</span> Completed
+            <span class="nav-count" id="completed-count">0</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="progress-label">
+            <span>Daily progress</span><strong id="progress-value">0%</strong>
+          </div>
+          <div class="progress-track"><span id="progress-bar"></span></div>
+          <p>Small steps add up.</p>
+        </div>
+      </aside>
+
+      <section class="content">
+        <header class="topbar">
+          <div>
+            <p class="date-label" id="date-label">Monday, January 1</p>
+            <p class="greeting">
+              Good morning, <span>let's get focused.</span>
+            </p>
+          </div>
+          <div class="topbar-actions">
+            <button
+              class="icon-button"
+              type="button"
+              aria-label="Toggle theme"
+              id="theme-toggle"
+            >
+              ☼
+            </button>
+            <div class="avatar" aria-label="Profile">R</div>
+          </div>
+        </header>
+
+        <div class="content-inner">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">Overview</p>
+              <h2 id="view-title">All tasks</h2>
+            </div>
+            <span class="task-summary" id="task-summary">0 tasks</span>
+          </div>
+
+          <form class="task-form" id="task-form">
+            <span class="plus-mark" aria-hidden="true">+</span>
+            <input
+              id="task-input"
+              type="text"
+              placeholder="What needs to be done?"
+              maxlength="120"
+              autocomplete="off"
+              aria-label="New task"
+            />
+            <button type="submit">Add task <span>↵</span></button>
+          </form>
+
+          <div class="filter-row" aria-label="Task filters">
+            <button
+              class="filter-button is-selected"
+              type="button"
+              data-filter="all"
+            >
+              Everything
+            </button>
+            <button class="filter-button" type="button" data-filter="active">
+              In progress
+            </button>
+            <button class="filter-button" type="button" data-filter="completed">
+              Done
+            </button>
+          </div>
+
+          <div class="task-list" id="task-list" aria-live="polite"></div>
+          <div class="empty-state" id="empty-state">
+            <div class="empty-mark">✦</div>
+            <h3>Your list is clear.</h3>
+            <p>Add a task above and start shaping your day.</p>
+          </div>
+
+          <footer class="list-footer">
+            <span><strong id="remaining-count">0</strong> tasks remaining</span>
+            <button type="button" id="clear-completed">Clear completed</button>
+          </footer>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const tasks = [];
+      const taskForm = document.querySelector("#task-form");
+      const taskInput = document.querySelector("#task-input");
+      const taskList = document.querySelector("#task-list");
+      const emptyState = document.querySelector("#empty-state");
+      const viewTitle = document.querySelector("#view-title");
+      const taskSummary = document.querySelector("#task-summary");
+      const remainingCount = document.querySelector("#remaining-count");
+      const allCount = document.querySelector("#all-count");
+      const completedCount = document.querySelector("#completed-count");
+      const progressValue = document.querySelector("#progress-value");
+      const progressBar = document.querySelector("#progress-bar");
+      let currentFilter = "all";
+
+      const filterLabels = {
+        all: "All tasks",
+        active: "In progress",
+        completed: "Completed",
+        today: "Today",
+      };
+
+      function visibleTasks() {
+        if (currentFilter === "active")
+          return tasks.filter((task) => !task.done);
+        if (currentFilter === "completed")
+          return tasks.filter((task) => task.done);
+        return tasks;
+      }
+
+      function render() {
+        const visible = visibleTasks();
+        taskList.innerHTML = visible
+          .map(
+            (task) => `
+        <article class="task-item ${task.done ? "is-done" : ""}">
+          <button class="check-button" type="button" aria-label="${task.done ? "Mark incomplete" : "Mark complete"}" data-action="toggle" data-id="${task.id}">${task.done ? "✓" : ""}</button>
+          <span class="task-name">${task.text.replace(/[&<>]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[character])}</span>
+          <span class="task-time">${task.done ? "Completed" : "Today"}</span>
+          <button class="delete-button" type="button" aria-label="Delete task" data-action="delete" data-id="${task.id}">×</button>
+        </article>
+      `,
+          )
+          .join("");
+
+        const completed = tasks.filter((task) => task.done).length;
+        const remaining = tasks.length - completed;
+        const percentage = tasks.length
+          ? Math.round((completed / tasks.length) * 100)
+          : 0;
+        emptyState.hidden = visible.length !== 0;
+        taskSummary.textContent = `${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}`;
+        remainingCount.textContent = remaining;
+        allCount.textContent = tasks.length;
+        completedCount.textContent = completed;
+        progressValue.textContent = `${percentage}%`;
+        progressBar.style.width = `${percentage}%`;
+      }
+
+      function setFilter(filter) {
+        currentFilter = filter;
+        viewTitle.textContent = filterLabels[filter];
+        document.querySelectorAll("[data-filter]").forEach((button) => {
+          button.classList.toggle(
+            "is-active",
+            button.dataset.filter === filter &&
+              button.classList.contains("nav-item"),
+          );
+          button.classList.toggle(
+            "is-selected",
+            button.dataset.filter === filter &&
+              button.classList.contains("filter-button"),
+          );
+        });
+        render();
+      }
+
+      taskForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const text = taskInput.value.trim();
+        if (!text) return;
+        tasks.unshift({ id: Date.now(), text, done: false });
+        taskInput.value = "";
+        taskInput.focus();
+        render();
+      });
+
+      taskList.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        const task = tasks.find(
+          (item) => item.id === Number(button.dataset.id),
+        );
+        if (button.dataset.action === "toggle" && task) task.done = !task.done;
+        if (button.dataset.action === "delete")
+          tasks.splice(
+            tasks.findIndex((item) => item.id === Number(button.dataset.id)),
+            1,
+          );
+        render();
+      });
+
+      document
+        .querySelectorAll("[data-filter]")
+        .forEach((button) =>
+          button.addEventListener("click", () =>
+            setFilter(button.dataset.filter),
+          ),
+        );
+      document
+        .querySelector("#clear-completed")
+        .addEventListener("click", () => {
+          for (let index = tasks.length - 1; index >= 0; index -= 1)
+            if (tasks[index].done) tasks.splice(index, 1);
+          render();
+        });
+      document
+        .querySelector("#theme-toggle")
+        .addEventListener("click", () =>
+          document.body.classList.toggle("soft-mode"),
+        );
+      document.querySelector("#date-label").textContent =
+        new Intl.DateTimeFormat("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        }).format(new Date());
+      render();
+    </script>
+  </body>
+</html>
