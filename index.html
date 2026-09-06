@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111318" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Guesswork | Number Guessing Game</title>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">?</div>
+          <div class="brand-name">guesswork</div>
+        </div>
+        <div class="status">
+          <span class="status-dot" aria-hidden="true"></span> session ready
+        </div>
+      </header>
+
+      <section class="main" aria-labelledby="game-title">
+        <div>
+          <p class="eyebrow">01 / intuition over information</p>
+          <h1 id="game-title">Make your<br /><span>best guess.</span></h1>
+          <p class="description">
+            A tiny game of instinct, timing, and one number hiding in plain
+            sight. Set the range, then narrow it down.
+          </p>
+          <div class="prompt-card game-card">
+            <div class="game-card-heading">
+              <span class="enter-key" aria-hidden="true">↵</span>
+              <div>
+                <strong id="game-card-title">Set your range.</strong>
+                <p id="game-message" role="status" aria-live="polite">
+                  Choose the highest possible number to begin.
+                </p>
+              </div>
+            </div>
+
+            <form id="range-form" class="game-form">
+              <label for="max-number">Highest possible number</label>
+              <div class="input-row">
+                <input
+                  id="max-number"
+                  type="number"
+                  min="1"
+                  max="1000000"
+                  placeholder="e.g. 50"
+                  required
+                />
+                <button type="submit">
+                  Start game <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </form>
+
+            <form id="guess-form" class="game-form" hidden>
+              <label for="guess-number">Your guess</label>
+              <div class="input-row">
+                <input
+                  id="guess-number"
+                  type="number"
+                  min="1"
+                  placeholder="Type a number"
+                  required
+                />
+                <button type="submit">
+                  Guess <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </form>
+
+            <button id="reset-game" class="reset-button" type="button" hidden>
+              Start over
+            </button>
+          </div>
+        </div>
+
+        <aside class="number-panel" aria-label="Number board decoration">
+          <div class="panel-heading">
+            <span>possible values</span><span id="range-label">01 — 09</span>
+          </div>
+          <div class="number-grid" aria-hidden="true">
+            <div class="number">01</div>
+            <div class="number">02</div>
+            <div class="number">03</div>
+            <div class="number">04</div>
+            <div class="number">05</div>
+            <div class="number">06</div>
+            <div class="number">07</div>
+            <div class="number">08</div>
+            <div class="number">09</div>
+          </div>
+          <div class="panel-footer">
+            <span id="range-status">unknown</span
+            ><span id="attempt-count">0 attempts</span>
+          </div>
+        </aside>
+      </section>
+
+      <footer>
+        <span>number guessing game</span><span>trust your first instinct</span>
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
